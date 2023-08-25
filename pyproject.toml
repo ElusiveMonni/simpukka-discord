@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "discord"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "simpukka-discord"
+description = "Discord bindings for simpukka."
+version = "0.0.1"
+
+
+[project.entry-points."simpukka.plugin"]
+simpukka-discord = "simpukka_discord:register"

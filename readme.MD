@@ -1,0 +1,1 @@
+Plugin for Simpukka providing extensive discord bindings for discord.py library.
