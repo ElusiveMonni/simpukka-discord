@@ -157,6 +157,4 @@ if __name__ == "__main__":
 
         await ctx.channel.send(embed=embed)
 
-
-
     bot.run(os.getenv("token"))
