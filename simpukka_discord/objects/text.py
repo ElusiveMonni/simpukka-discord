@@ -17,7 +17,7 @@ class Text(GuildChannel):
     def data(self):
         return super().data() | {"topic": self.topic, "default_auto_archive_duration": self.default_auto_archive_duration,
                                  "default_thread_slowmode_delay": self.default_thread_slowmode_delay,
-                                 "is_news": self.is_news, "slowmode_delay": self.slowmode_delay,
+                                 "slowmode_delay": self.slowmode_delay,
                                  "threads": self.threads
                                  }
 

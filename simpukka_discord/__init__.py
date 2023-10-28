@@ -1,30 +1,28 @@
-import pprint
-import typing
 import math
-import asyncio
+import os
 
 from discord.ext import commands
 from attrs import define
 import discord
-import multiprocessing
-from multiprocessing.managers import BaseManager
 
-from simpukka import template
-from simpukka import utils
+from simpukka import template, initialise
+
 from simpukka_discord.objects.user import User
 from simpukka_discord.objects.guild import Guild
 from simpukka_discord.objects.member import Member
 from simpukka_discord.objects.embed import Embed
+from simpukka_discord.objects.message import Message
 from simpukka_discord.objects.ctx import Ctx
-
 from simpukka_discord.objects.role import Role
-
 from simpukka_discord.objects.voice import Voice
 from simpukka_discord.objects.stage import Stage
 from simpukka_discord.objects.text import Text
 from simpukka_discord.objects.forum import Forum
 
 from warnings import warn
+from simpukka import utils
+
+import ray
 
 class DiscordErrors(Exception):
     pass
@@ -38,28 +36,24 @@ class DiscordResult:
     error = None
     ctx = None
 
+@ray.remote
+class StackActor:
+    def __init__(self):
+        self.stack = []
+    def append(self, v):
+        self.stack.append(v)
+    def get_stack(self):
+        return self.stack
 
 class DiscordBindings(utils.SimpukkaPlugin):
-    def __init__(self, data=None, pre_hook_func=None, after_hook_func=None, **kwargs):
-        self.stack = []
+    def __init__(self, data=None, pre_hook_func=None, after_hook_func=None, extra_discord=None, **kwargs):
         self.bot = kwargs.get("bot")
-
-        BaseManager.register('Ctx', Ctx)
-        class_manager = BaseManager()
-        class_manager.start()
-        ctx = class_manager.Ctx(kwargs.get("guild_id"), kwargs.get("channel_id"), kwargs.get("user_id"))
-
-        manager = multiprocessing.Manager()
-        stack = manager.list()
-
+        stack = StackActor.remote()
         self.stack = stack
+        ctx = Ctx(kwargs.get("guild_id"), kwargs.get("channel_id"), kwargs.get("user_id"))
 
-
-
-        self.ctx = ctx
-
-
-        discord_objects = {"embed": Embed, "ctx": ctx}
+        discord_objects = {"embed": Embed}
+        shared_data = {"ctx": ctx}
 
         if kwargs.get("user_id") is not None:
             discord_objects["user"] = User(self.bot, kwargs["user_id"]).data()
@@ -67,7 +61,7 @@ class DiscordBindings(utils.SimpukkaPlugin):
         if kwargs.get("guild_id") is not None:
 
             discord_objects["guild"] = Guild(self.bot, kwargs["guild_id"], stack).data()
-
+            guild = self.bot.get_guild(kwargs["guild_id"])
             if kwargs.get("user_id") is not None:
                 discord_objects["member"] = Member(self.bot,  kwargs["guild_id"], kwargs["user_id"], stack).data()
 
@@ -85,21 +79,32 @@ class DiscordBindings(utils.SimpukkaPlugin):
                 elif channel.type.name == "stage_voice":
                     discord_objects["channel"] = Stage(self.bot, kwargs["guild_id"], channel.id, stack).data()
 
+            if kwargs.get("message") is not None:
+                discord_objects["message"] = Message(self.bot, kwargs["message"], guild, stack).data()
+
+        if extra_discord is not None:
+            for x in extra_discord:
+                has_stack = getattr(x, "set_stack", None)
+                if callable(has_stack):
+                    x.set_stack(stack)
+
+                discord_objects[x] = extra_discord[x].data()
 
         super(DiscordBindings, self).__init__(None, pre_hook_func, after_hook_func)
 
         self.data = discord_objects
+        self.shared_data = shared_data
 
     async def async_after_hook(self, res):
-        discord_res = DiscordResult(discord_api_calls=len(self.stack))
-        discord_res.ctx = self.ctx
-
+        stack = ray.get(self.stack.get_stack.remote())
+        discord_res = DiscordResult(discord_api_calls=0)
+        discord_res.ctx = res.shared.get("ctx", None)
         res.discord = discord_res
 
-        if len(self.stack) > self.kwargs.get("requests_left", math.inf):
+        if len(stack) > self.kwargs.get("requests_left", math.inf):
             discord_res.error = NoRequestsLeft("Out of web requests.")
             return
-        for x in self.stack:
+        for x in stack:
             try:
                 await x[0](self.bot, *x[1])
             except Exception as e:
@@ -107,11 +112,10 @@ class DiscordBindings(utils.SimpukkaPlugin):
 
     def after_hook(self, res):
         if self.kwargs.get("silence_non_async", False):
-            warn("Only async_start supports discord actions. This can be disabled with providing flag 'silence_non_async'=True")
+            warn("Only async_start supports discord actions. This warning can be disabled with providing flag 'silence_non_async'=True")
 
 
 def register(**kwargs):
-    print("Register", kwargs)
     return DiscordBindings(**kwargs)
 
 class Main(commands.Bot):
@@ -123,46 +127,36 @@ class Main(commands.Bot):
 
 if __name__ == "__main__":
     bot = Main()
-
+    initialise.init_simpukka()
 
     @bot.listen()
     async def on_ready():
         print("Logged in as:", bot.user.name)
-        '''
-
-        t = template.Template("""
-        (% set e = embed() %)
-        ((channel.send("HELLO", embed=e)))
-        """, bot=bot)
-        r = await t.async_start()
-        print("DONE", r)'''
 
     @bot.command()
     @commands.is_owner()
     async def simpukka(ctx: commands.Context, *, template_str):
-
-        t = template.Template(template_str, bot=bot, guild_id=ctx.guild.id, user_id=ctx.author.id, filter_level=template.FilterLevel.disabled)
+        t = template.Template(template_str, bot=bot, user_id=ctx.author.id, guild_id=ctx.author.guild.id, filter_level=template.FilterLevel.disabled)
         r = await t.async_start()
-
-
         embed = r.discord.ctx.get_embed()
 
-        if r.discord.ctx.get_message_state():
+        if r.discord.ctx.message_state:
             try:
                 embed = discord.Embed.from_dict(embed._to_json())
             except Exception as e:
-                print("ERROR", e)
                 embed = None
 
-            await ctx.channel.send("Simpukka render\n" + "-"*20 + "\n" + r.result, embed=embed)
+        await ctx.channel.send("Simpukka render\n" + "-"*20 + "\n" + r.result, embed=embed)
 
         # Debug mode related stuff
         embed = discord.Embed(title="Debug information", description=f"`{template_str}`", colour=0x850f62)
 
         embed.add_field(name="Render error", value=r.error, inline=True)
-        embed.add_field(name="Discord error", value=r.discord.error, inline=True)
-        embed.add_field(name="Runtime usage", value=f"**Runtime**: {round(r.time_taken, 5)} s\n**Peak ram use**: {r.peak_ram / 1024 ** 2} Mb\n**Api_calls**: {r.api_calls}", inline=False)
+        #embed.add_field(name="Discord error", value=r.discord.error, inline=True)
+        embed.add_field(name="Runtime usage", value=f"**Runtime**: {round(r.time_taken, 5)} s\n**Api_calls**: {r.api_calls}", inline=False)
 
         await ctx.channel.send(embed=embed)
 
-    bot.run("OTYyMDUyNzIxMzU0MDg0NDEz.Gui8i3.7Yf7dBOTsXVKsrzZpmLi9akMgtv6B_yCaYb3Mo")
+
+
+    bot.run(os.getenv("token"))

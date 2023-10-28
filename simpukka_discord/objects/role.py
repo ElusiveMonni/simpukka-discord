@@ -12,9 +12,9 @@ class Role:
         "_stack"
     )
 
-    def __init__(self, bot: commands.Bot, guild_id: int, role_id: int, stack):
+    def __init__(self, bot: commands.Bot, guild_id: int, role_id: int, stack, override=None):
         self._guild = bot.get_guild(guild_id)
-        self._role = self._guild.get_role(role_id)
+        self._role = self._guild.get_role(role_id) if override is None else override
         self._stack = stack
         self._bot = bot
 

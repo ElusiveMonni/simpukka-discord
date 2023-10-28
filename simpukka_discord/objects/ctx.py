@@ -2,7 +2,7 @@
 
 class Ctx:
     """Context class for Simpukka runtime. Tells context and metadata. Metadata like who is author of the action,
-    what triggered the it, where it will send the result. It also allows you to add embed to the result message."""
+    what triggered it, where it will send the result. It also allows you to add embed to the result message."""
     def __init__(self, guild_id, channel_id, author_id):
         self.send_message = True
         self.guild_id = guild_id
@@ -21,7 +21,8 @@ class Ctx:
         self.send_message = False
         return ""
 
-    def get_message_state(self):
+    @property
+    def message_state(self) -> bool:
         """Gets the state of whether the message sending has been disabled."""
         return self.send_message
 

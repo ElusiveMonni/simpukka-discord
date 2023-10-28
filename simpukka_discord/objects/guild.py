@@ -1,9 +1,9 @@
 from functools import partial
 
 from discord.ext import commands
-import discord
 
-from simpukka_discord.objects import emoji, sticker, stage, voice, text, member, role, thread, forum
+from simpukka_discord.objects import text
+from simpukka_discord.objects import voice, stage, emoji, forum, member, sticker, role, thread
 from simpukka_discord.object_utils import ban, unban, kick
 
 
@@ -17,9 +17,9 @@ class Guild:
         "_stack"
     )
 
-    def __init__(self, bot: commands.Bot, guild_id: int, stack: list):
+    def __init__(self, bot: commands.Bot, guild_id: int, stack: list, override=None):
         self._bot = bot
-        self._guild = self._bot.get_guild(guild_id)
+        self._guild = self._bot.get_guild(guild_id) if override is None else override
         self._stack = stack
 
     def data(self):
@@ -98,8 +98,8 @@ class Guild:
         return self._guild.premium_subscription_count
 
     @property
-    def afk_channel(self) -> stage.Stage|voice.Voice:
-        """Afk channel set for guild. |channel"""
+    def afk_channel(self) -> stage.Stage | voice.Voice:
+        """Afk channel set for guild."""
         if self._guild.afk_channel is None:
             return None
         if self._guild.afk_channel.type == "voice":
@@ -109,14 +109,14 @@ class Guild:
 
     @property
     def system_channel(self) -> text.Text:
-        """System channel set for guild. |channel"""
+        """System channel set for guild."""
         if self._guild.system_channel is None:
             return None
         return text.Text(self._bot, self._guild.id, self._guild.system_channel.id, self._stack).data()
 
     @property
     def rules_channel(self) -> text.Text:
-        """Rules channel set for guild. |channel"""
+        """Rules channel set for guild."""
         if self._guild.rules_channel is None:
             return None
         return text.Text(self._bot, self._guild.id, self._guild.rules_channel.id, self._stack).data()
@@ -165,13 +165,13 @@ class Guild:
 
     @property
     def premium_subscriber_role(self):
-        """Nitro role of the guild. |role"""
+        """Nitro role of the guild."""
         if self._guild.premium_subscriber_role is not None:
             return role.Role(self._bot, self._guild.id, self._guild.premium_subscriber_role.id, self._stack).data()
 
     @property
     def premium_subscribers(self):
-        """List of nitro boosters. |list|member"""
+        """List of nitro boosters."""
         return [
             member.Member(self._bot, self._guild.id, m.id, self._stack).data()
             for m in self._guild.premium_subscribers
@@ -179,7 +179,7 @@ class Guild:
 
     @property
     def members(self):
-        """List of members in the guild. |list|member"""
+        """List of members in the guild."""
         return [
             member.Member(self._bot, self._guild.id, m.id, self._stack).data()
             for m in self._guild.members
@@ -187,7 +187,7 @@ class Guild:
 
     @property
     def channels(self):
-        """List of channels in the guild. |list|channel"""
+        """List of channels in the guild."""
         channels = []
         for c in self._guild.channels:
             if c.type.name == "text":
@@ -202,7 +202,7 @@ class Guild:
 
     @property
     def threads(self):
-        """List of threads in a guild. |list|thread"""
+        """List of threads in a guild."""
         return [
             thread.Thread(self._bot, self._guild.id, t.parent_id, t.id, self._stack).data()
             for t in self._guild.threads
@@ -210,7 +210,7 @@ class Guild:
 
     @property
     def emojis(self) -> typing.Iterable[emoji.Emoji]:
-        """List of emojis in a guild. |list|emoji"""
+        """List of emojis in a guild."""
         return [
             emoji.Emoji(self._bot, self._guild.id, e.id).data()
             for e in self._guild.emojis
@@ -218,7 +218,7 @@ class Guild:
 
     @property
     def stickers(self) -> typing.Iterable[sticker.Sticker]:
-        """List of sticker in a guild. |list|sticker"""
+        """List of sticker in a guild.r"""
         return [
             sticker.Sticker(self._bot, self._guild.id, s).data()
             for s in self._guild.stickers

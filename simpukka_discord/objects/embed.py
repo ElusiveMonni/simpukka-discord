@@ -31,8 +31,6 @@ class EmbedAuthor:
         if not len(name) or not isinstance(name, str):
             name = None
 
-        print(name, author_url, author_icon_url)
-
         self.name = truncate(name, 256)
 
         self.url = url_validator(author_url)
@@ -155,9 +153,9 @@ class Embed:
         self.images.image = url_validator(image_url)
         return ""
 
-    def set_footer(self, text=None, icon_url = None, timeout = None):
+    def set_footer(self, text=None, icon_url = None, timestamp = None):
         """Set footer for the embed."""
-        self.footer = EmbedFooter(text, icon_url, timeout)
+        self.footer = EmbedFooter(text, icon_url, timestamp)
         return ""
 
     def _to_json(self):
@@ -197,6 +195,3 @@ class Embed:
 
 if __name__ == '__main__':
     embed = Embed()
-    embed.set_author("Iraaz")
-    embed.set_thumbnail("https://monni.fyi/static/images/comet_monni.png")
-    print(embed._to_json())

@@ -1,6 +1,6 @@
 from functools import partial
 
-from simpukka_discord.objects import member, user, emoji
+from simpukka_discord.objects import member, user
 from discord.ext import commands
 import discord
 from simpukka_discord.object_utils import create_thread, delete_message
@@ -42,9 +42,9 @@ class Message:
     def author(self) -> member.Member | user.User:
         """Author of the message."""
         if isinstance(self._message.author, discord.abc.User):
-            return user.User(self._bot, self._message.author.id)
+            return user.User(self._bot, self._message.author.id).data()
         else:
-            return member.Member(self._bot, self._guild.id, self._message.author.id, self._stack)
+            return member.Member(self._bot, self._guild.id, self._message.author.id, self._stack).data()
 
     @property
     def jump_url(self) -> str:

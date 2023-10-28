@@ -3,19 +3,24 @@ import discord
 
 
 class User:
-
+    """Contains information about a user not tied to any guild."""
     __slots__ = (
         "_user",
+        "_bot"
     )
 
-    def __init__(self, bot: commands.Bot, user_id: int):
-        self._user: discord.User = bot.get_user(user_id)
+    def __init__(self, bot: commands.Bot, user_id: int = 0, user_override: discord.User = None):
+        if user_override is None:
+            self._user: discord.User = bot.get_user(user_id)
+        else:
+            self._user: discord.User = user_override
+        self._bot = bot
 
     def data(self):
         return {
             "id": self.id, "name": self.name, "global_name": self.global_name, "bot": self.bot,
             "mention": self.mention, "avatar_url": self.avatar_url, "display_name": self.display_name,
-            "display_avatar": self.display_avatar
+            "display_avatar": self.display_avatar,
         }
 
     @property
@@ -30,12 +35,12 @@ class User:
 
     @property
     def global_name(self) -> str:
-        """Global username. One used to add you as friend."""
+        """Global username. One unique to your account."""
         return self._user.global_name
 
     @property
     def bot(self) -> bool:
-        """Whether user is a bot"""
+        """Whether a user is a bot or not"""
         return self._user.bot
 
     @property
@@ -56,6 +61,6 @@ class User:
 
     @property
     def display_avatar(self) -> str:
-        """Avatar thats displayed on discord."""
+        """Avatar that's displayed on discord."""
         if self._user.display_avatar is not None:
             return self._user.display_avatar.url

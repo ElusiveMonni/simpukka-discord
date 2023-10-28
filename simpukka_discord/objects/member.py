@@ -1,7 +1,6 @@
 from functools import partial
 
 from discord.ext import commands
-import discord
 from simpukka_discord.objects.user import User
 from simpukka_discord.objects.role import Role
 
@@ -9,7 +8,7 @@ from simpukka_discord.object_utils import ban, unban, kick, timeout, untimeout, 
 
 
 class Member(User):
-
+    """Discord guild member. Difference between member and user is that member belongs to a guild and has information related the guild."""
     __slots__ = (
         "_member",
         "_guild",
@@ -26,7 +25,7 @@ class Member(User):
 
     def data(self):
         return super().data() | {"pending": self.pending, "nick": self.nick, "created_at": self.created_at,
-                                 "joined_at": self.joined_at, "timeout_until": self.timeout_until, "color": self.color,
+                                 "joined_at": self.joined_at, "timeout_until": self.timed_out_until, "color": self.color,
                                  "top_role": self.top_role, "roles": self.roles,
                                  "ban": partial(ban, self._stack, self._guild.id, self._member.id),
                                  "unban": partial(unban, self._stack, self._guild.id, self._member.id),
@@ -37,6 +36,10 @@ class Member(User):
                                  "remove_role": partial(remove_role, self._stack, self._guild.id, self._member.id),
                                  "set_nickname": partial(set_nickname, self._stack, self._guild.id, self._member.id),
                                  }
+
+    def set_stack(self, stack):
+        """Set new stack to the object"""
+        self._stack = stack
 
     @property
     def pending(self) -> bool:
@@ -59,8 +62,8 @@ class Member(User):
         return int(self._member.created_at.timestamp())
 
     @property
-    def timeout_until(self) -> int:
-        """Join date of the member."""
+    def timed_out_until(self) -> int:
+        """Time which time out will last. If person isn't timed out returns None."""
         if self._member.timed_out_until is not None:
             return int(self._member.timed_out_until.timestamp())
 
@@ -71,6 +74,7 @@ class Member(User):
 
     @property
     def top_role(self):
+        """Top role of the user. Top colored role determines the color of the members name."""
         return Role(self._bot, self._guild.id, self._member.top_role.id, self._stack).data()
 
     @property
@@ -99,7 +103,7 @@ class Member(User):
         raise NotImplementedError
 
     def timeout(self, until, reason=""):
-        """Timeout the user. Until (time) in seconds."""
+        """Timeout the user for given seconds."""
         raise NotImplementedError
 
     def untimeout(self, reason=""):

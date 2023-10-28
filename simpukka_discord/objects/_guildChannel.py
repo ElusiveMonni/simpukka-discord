@@ -1,5 +1,4 @@
 from discord.ext import commands
-import discord
 from functools import partial
 from simpukka_discord.object_utils import send
 

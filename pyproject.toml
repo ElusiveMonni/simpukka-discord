@@ -9,5 +9,8 @@ description = "Discord bindings for simpukka."
 version = "0.0.1"
 
 
+[tool.setuptools]
+packages = ["simpukka_discord"]
+
 [project.entry-points."simpukka.plugin"]
 simpukka-discord = "simpukka_discord:register"

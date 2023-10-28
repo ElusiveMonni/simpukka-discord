@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum
-from typing import Iterable
 
 import discord
 from discord.ext import commands
@@ -111,3 +110,4 @@ class StackFunctions(Enum):
     SetNickname = set_nickname
 
     DeleteMessage = delete_message
+    

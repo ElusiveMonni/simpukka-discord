@@ -14,8 +14,9 @@ class Forum(Text):
         self._bot = bot
 
     def data(self):
-        return super().data() | {"default_layout": self.default_layout, "default_reaction_emoji": self.default_reaction_emoji,
+        data = super().data() | {"default_layout": self.default_layout, "default_reaction_emoji": self.default_reaction_emoji,
                 "available_tags": self.available_tags}
+        return data
 
     @property
     def default_layout(self):
