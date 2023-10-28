@@ -109,6 +109,7 @@ class DiscordBindings(utils.SimpukkaPlugin):
                 await x[0](self.bot, *x[1])
             except Exception as e:
                 print(e)
+        ray.kill(self.stack)
 
     def after_hook(self, res):
         if self.kwargs.get("silence_non_async", False):
@@ -156,5 +157,10 @@ if __name__ == "__main__":
         embed.add_field(name="Runtime usage", value=f"**Runtime**: {round(r.time_taken, 5)} s\n**Api_calls**: {r.api_calls}", inline=False)
 
         await ctx.channel.send(embed=embed)
+
+
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
     bot.run(os.getenv("token"))
