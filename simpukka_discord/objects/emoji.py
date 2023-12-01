@@ -14,6 +14,8 @@ class Emoji:
         self._emoji = self._guild.get_emoji(emoji_id)
 
     def data(self):
+        if self._emoji is None:
+            return {}
         return {"id": self.id, "name": self.name, "require_colons": self.require_colons, "animated": self.animated,
                 "available": self.available, "url": self.url, "created_at": self.created_at}
 

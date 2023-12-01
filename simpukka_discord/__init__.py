@@ -128,7 +128,7 @@ class Main(commands.Bot):
 
 if __name__ == "__main__":
     bot = Main()
-    initialise.init_simpukka()
+    initialise.init_simpukka(tunnel_required=False)
 
     @bot.listen()
     async def on_ready():
