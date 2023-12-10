@@ -37,19 +37,18 @@ async def thread_delete(bot: commands.Bot, guild_id, thread_id, **kwargs):
     await thread.delete()
 
 async def ban(bot: commands.Bot, guild_id: int, member_id: int, delete_message_seconds: int, reason: str, **kwargs):
+    if delete_message_seconds is None:
+        delete_message_seconds = 0
     guild = bot.get_guild(guild_id)
-    member = guild.get_member(member_id)
-    await member.ban(delete_message_seconds=delete_message_seconds, reason=reason)
+    await guild.ban(user=discord.Object(member_id, type=discord.User), delete_message_seconds=delete_message_seconds, reason=reason)
 
 async def unban(bot: commands.Bot, guild_id: int, member_id: int, reason: str, **kwargs):
     guild = bot.get_guild(guild_id)
-    member = guild.get_member(member_id)
-    await member.unban(reason=reason)
+    await guild.unban(discord.Object(member_id, type=discord.User), reason=reason)
 
 async def kick(bot: commands.Bot, guild_id: int, member_id: int, reason: str, **kwargs):
     guild = bot.get_guild(guild_id)
-    member = guild.get_member(member_id)
-    await member.kick(reason=reason)
+    await guild.kick(user=discord.Object(member_id, type=discord.User), reason=reason)
 
 async def timeout(bot: commands.Bot, guild_id: int, member_id: int, until: int, reason: str, **kwargs):
     guild = bot.get_guild(guild_id)

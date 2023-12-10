@@ -108,7 +108,7 @@ class DiscordBindings(utils.SimpukkaPlugin):
             try:
                 await x[0](self.bot, *x[1])
             except Exception as e:
-                print(e)
+                print("Stack error: ", e)
         ray.kill(self.stack)
 
     def after_hook(self, res):
