@@ -18,6 +18,7 @@ from simpukka_discord.objects.voice import Voice
 from simpukka_discord.objects.stage import Stage
 from simpukka_discord.objects.text import Text
 from simpukka_discord.objects.forum import Forum
+from simpukka_discord.objects.discord_utils import DiscordUtils
 
 from warnings import warn
 from simpukka import utils
@@ -51,8 +52,8 @@ class DiscordBindings(utils.SimpukkaPlugin):
         stack = StackActor.remote()
         self.stack = stack
         ctx = Ctx(kwargs.get("guild_id"), kwargs.get("channel_id"), kwargs.get("user_id"))
-
-        discord_objects = {"embed": Embed}
+        discord_utils = DiscordUtils()
+        discord_objects = {"embed": Embed, "discord_utils": discord_utils}
         shared_data = {"ctx": ctx}
 
         if kwargs.get("user_id") is not None:

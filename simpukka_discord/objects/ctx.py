@@ -1,3 +1,4 @@
+import shlex
 
 
 class Ctx:
@@ -29,3 +30,4 @@ class Ctx:
     def get_embed(self):
         """Get the currently set embed."""
         return self.embed
+
