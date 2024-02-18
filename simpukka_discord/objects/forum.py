@@ -26,6 +26,8 @@ class Forum(Text):
     @property
     def default_reaction_emoji(self):
         """Default reaction for new posts."""
+        if self._channel.default_reaction_emoji is None:
+            return None
         return Emoji(self._bot, self._guild.id, self._channel.default_reaction_emoji.id).data()
 
     @property
