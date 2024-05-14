@@ -50,9 +50,9 @@ def set_nickname(stack, guild_id: int, member_id: int, nick: str):
     return ""
 
 def create_thread(stack, guild_id: int, channel_id: int, message_id: int, name: str, slowmode_delay: int = None, reason=""):
-    ray.get(stack.append.remote(([StackFunctions.SetNickname, (guild_id, channel_id, message_id, name, slowmode_delay, reason)])))
+    ray.get(stack.append.remote(([StackFunctions.CreateThread, (guild_id, channel_id, message_id, name, slowmode_delay, reason)])))
     return ""
 
 def delete_message(stack, guild_id: int, channel_id: int, message_id: int):
-    ray.get(stack.append.remote(([StackFunctions.SetNickname, (guild_id, channel_id, message_id)])))
+    ray.get(stack.append.remote(([StackFunctions.DeleteMessage, (guild_id, channel_id, message_id)])))
     return ""
