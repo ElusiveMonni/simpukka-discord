@@ -153,7 +153,10 @@ class Guild:
     @property
     def owner(self) -> dict:
         """Owner of the guild. |member"""
-        return member.Member(self._bot, self._guild.id, self._guild.owner.id, self._stack).data()
+        if self._guild is not None and self._guild.owner is not None:
+            return member.Member(self._bot, self._guild.id, self._guild.owner.id, self._stack).data()
+        else:
+            return {}
 
     @property
     def roles(self) -> list[dict]:
