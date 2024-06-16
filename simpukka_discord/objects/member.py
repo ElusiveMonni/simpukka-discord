@@ -82,7 +82,7 @@ class Member(User):
         """List of all the role's member has."""
         return [
             Role(self._bot, self._guild.id, r.id, self._stack).data()
-            for r in self._guild.roles
+            for r in self._member.roles
         ]
 
     @property
