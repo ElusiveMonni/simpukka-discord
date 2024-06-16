@@ -41,7 +41,7 @@ def add_role(stack, guild_id: int, member_id: int, role_id: int, reason: str = "
     ray.get(stack.append.remote(([StackFunctions.AddRole, (guild_id, member_id, role_id, reason)])))
     return ""
 
-def remove_role(stack, guild_id: int, member_id: int, role_id: int, reason: str):
+def remove_role(stack, guild_id: int, member_id: int, role_id: int, reason: str = ""):
     ray.get(stack.append.remote(([StackFunctions.RemoveRole, (guild_id, member_id, role_id, reason)])))
     return ""
 
