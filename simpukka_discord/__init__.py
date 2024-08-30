@@ -67,7 +67,7 @@ class DiscordBindings(utils.SimpukkaPlugin):
                 discord_objects["member"] = Member(self.bot,  kwargs["guild_id"], kwargs["user_id"], stack).data()
 
             if kwargs.get("role_id") is not None:
-                discord_objects["member"] = Role(self.bot,  kwargs["guild_id"], kwargs["role_id"], stack).data()
+                discord_objects["role"] = Role(self.bot,  kwargs["guild_id"], kwargs["role_id"], stack).data()
 
             if kwargs.get("channel_id") is not None:
                 channel = self.bot.get_guild(kwargs["guild_id"]).get_channel(kwargs["channel_id"])
